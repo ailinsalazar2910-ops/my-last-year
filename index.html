@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#1f2937">
+<link rel="manifest" href="manifest.json">
+<title>My Last Year — Ailin's Dashboard</title>
+<style>
+:root{
+  --bg:#f5f1ea; --card:#fffdf9; --ink:#252525; --muted:#777;
+  --line:#ded7cc; --accent:#6e5a48; --accent2:#b79b7b; --soft:#eee7dc;
+  --green:#7b9273; --rose:#b78383; --blue:#71879b; --gold:#b39155;
+}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(135deg,#f5f1ea,#ebe4d9);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:var(--ink)}
+.wrap{max-width:1180px;margin:auto;padding:28px 18px 60px}
+header{display:flex;justify-content:space-between;gap:20px;align-items:flex-end;margin-bottom:22px}
+.eyebrow{letter-spacing:.18em;text-transform:uppercase;font-size:11px;color:var(--muted)}
+h1{font-family:Georgia,serif;font-size:44px;line-height:1;margin:7px 0}.sub{color:var(--muted)}
+.card{background:rgba(255,253,249,.92);border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 10px 30px rgba(50,40,30,.06)}
+.grid{display:grid;grid-template-columns:1.3fr .7fr;gap:18px}.full{grid-column:1/-1}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.stat{background:var(--soft);border-radius:16px;padding:14px}.num{font-size:25px;font-weight:800}.label{font-size:12px;color:var(--muted)}
+.progress{height:10px;background:#e6dfd4;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--accent);width:0%;transition:.3s}
+button{border:0;border-radius:12px;padding:10px 13px;background:var(--ink);color:white;cursor:pointer;font-weight:650}
+button.secondary{background:var(--soft);color:var(--ink)} button.tiny{padding:7px 9px;font-size:12px}
+.toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:14px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.dow{font-size:11px;text-transform:uppercase;color:var(--muted);padding:5px}
+.day{min-height:90px;background:#fbf8f3;border:1px solid var(--line);border-radius:13px;padding:8px;cursor:pointer;position:relative}.day:hover{transform:translateY(-1px)}
+.day.muted{opacity:.35}.day.today{outline:2px solid var(--accent2)} .daynum{font-weight:800}.tag{display:inline-block;font-size:9px;padding:3px 6px;border-radius:99px;margin-top:5px;background:#e7dfd3}.onu{background:#ead7d7}.cycle{background:#dce4ea}.done{background:#dce7d9}
+#detail h2{margin:0 0 4px;font-family:Georgia,serif}.task{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}.task input{margin-top:4px;width:17px;height:17px;accent-color:var(--accent)}
+.badge{font-size:11px;color:var(--muted)} .sectionTitle{font-family:Georgia,serif;font-size:22px;margin:0 0 10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}.reward{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);padding:12px;border-radius:14px;margin:8px 0}.locked{opacity:.5}
+input[type=text]{width:100%;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.note{font-size:12px;color:var(--muted);line-height:1.5}
+footer{text-align:center;color:var(--muted);font-size:12px;margin-top:24px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}h1{font-size:35px}.day{min-height:70px}.tag{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div>
+    <div class="eyebrow">2026–2027 · final school year</div>
+    <h1>My Last Year ✦</h1>
+    <div class="sub">Una vida con intención, disciplina y espacio para disfrutarla.</div>
+  </div>
+  <button id="notifyBtn">Activar notificaciones</button>
+</header>
+
+<div class="grid">
+<section class="card full">
+  <div class="stats">
+    <div class="stat"><div class="num" id="xp">0</div><div class="label">XP ganados</div></div>
+    <div class="stat"><div class="num" id="doneCount">0</div><div class="label">tareas hechas</div></div>
+    <div class="stat"><div class="num" id="streak">0</div><div class="label">racha actual</div></div>
+    <div class="stat"><div class="num" id="level">1</div><div class="label">nivel</div></div>
+  </div>
+  <div style="margin-top:14px" class="progress"><div class="bar" id="bar"></div></div>
+  <p class="note" id="progressText">Empieza pequeño. La meta es constancia, no perfección.</p>
+</section>
+
+<section class="card">
+  <div class="toolbar">
+    <div><div class="eyebrow" id="monthLabel"></div><h2 class="sectionTitle" id="monthTitle"></h2></div>
+    <div><button class="secondary tiny" onclick="changeMonth(-1)">←</button> <button class="secondary tiny" onclick="changeMonth(1)">→</button></div>
+  </div>
+  <div class="calendar" id="calendar"></div>
+</section>
+
+<section class="card" id="detail">
+  <div class="eyebrow">selected day</div>
+  <h2 id="selectedTitle">Selecciona un día</h2>
+  <div class="badge" id="selectedMeta"></div>
+  <div id="taskList"></div>
+</section>
+
+<section class="card">
+  <h2 class="sectionTitle">Mis pilares</h2>
+  <div class="two">
+    <div>
+      <p>🎀 <b>Carácter & elegancia</b><br><span class="note">hablar con respeto, cumplir lo que prometes, límites, seguridad y criterio.</span></p>
+      <p>💼 <b>Negocios</b><br><span class="note">dinero, ventas, marketing, negociación y tu emprendimiento.</span></p>
+      <p>🧠 <b>Aprender de verdad</b><br><span class="note">leer poco a poco + tomar notas + explicar lo aprendido.</span></p>
+      <p>🤍 <b>Estar contigo</b><br><span class="note">biblioteca, pintura, journaling o una actividad tranquila en un lugar seguro.</span></p>
+    </div>
+    <div>
+      <p>🌎 <b>Idiomas</b><br><span class="note">inglés todos los días; ruso en sesiones cortas y constantes.</span></p>
+      <p>🌱 <b>Voluntariado</b><br><span class="note">meta: mínimo 2 experiencias. Primero investigar requisitos y elegir con un adulto responsable.</span></p>
+      <p>🎨 <b>Creatividad</b><br><span class="note">pintar 2 veces por semana, sin obsesionarte con que quede perfecto.</span></p>
+      <p>🧴 <b>Autocuidado</b><br><span class="note">skincare, citas de salud y cuidado personal según necesidad; dormir a las 21:00.</span></p>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <h2 class="sectionTitle">📚 Lectura de esta etapa</h2>
+  <p><b>Regla:</b> yo te voy indicando el libro y las páginas/capítulos poco a poco. No tienes que adelantarte.</p>
+  <div class="card" style="background:var(--soft);box-shadow:none">
+    <b>Próxima lectura</b>
+    <p id="reading">Aún no asignada — cuando empecemos, aparecerá aquí.</p>
+  </div>
+  <p class="note">La idea es que cada lectura tenga una mini pregunta: “¿Qué aprendí y cómo lo aplicaría?”</p>
+</section>
+
+<section class="card">
+  <h2 class="sectionTitle">🏆 Tienda de recompensas</h2>
+  <p class="note">Ganas XP por cumplir. Las recompensas son para celebrar constancia, no para castigarte cuando fallas.</p>
+  <div id="rewards"></div>
+</section>
+
+<section class="card">
+  <h2 class="sectionTitle">🗓️ Citas & objetivos grandes</h2>
+  <div id="bigGoals"></div>
+</section>
+
+<section class="card">
+  <h2 class="sectionTitle">➕ Añadir algo</h2>
+  <input id="customInput" type="text" placeholder="Ej.: practicar presentación de ONU 20 min">
+  <button style="margin-top:9px" onclick="addCustom()">Añadir a hoy</button>
+</section>
+</div>
+
+<footer>
+  Tu calendario guarda los checkmarks en este navegador. Para notificaciones del teléfono, esta página debe estar publicada en HTTPS y tener permiso de notificaciones.
+</footer>
+</div>
+
+<script>
+const START = new Date(2026,8,28); // 28 Sep 2026 = Día 2
+const dayNames = ["Día 1","Día 2","Día 3","Día 4","Día 5","Día 6"];
+const cycleFocus = [
+ "Aprendizaje + carácter","Idiomas + ONU","Negocios + aprendizaje",
+ "Creatividad + autocuidado","Biblioteca + lectura","Tiempo contigo + organización"
+];
+const baseTasks = [
+ ["🌅","Mañana: levantarte a tiempo, aseo, desayuno y revisar 3 prioridades","routine",5],
+ ["📚","Estudio escolar: tareas + repaso activo","study",10],
+ ["🇬🇧","Inglés: 20–30 min","english",10],
+ ["🇷🇺","Ruso: 10–15 min","russian",7],
+ ["📖","Lectura/aprendizaje: 20 min + 3 líneas de notas","reading",10],
+ ["🧴","Skincare / autocuidado de noche","care",5],
+ ["🌙","Preparar mochila/ropa + pantalla fuera y rutina para dormir a las 21:00","sleep",8]
+];
+const special = {
+  1:[["🌐","ONU: asistir + tomar 3 apuntes + guardar una pregunta para investigar","onu",15]],
+  2:[["💼","Negocios: 30 min (dinero, ventas, marketing o negociación)","business",10]],
+  3:[["🎨","Pintura: 30–45 min","art",10]],
+  4:[["📚","Biblioteca/lectura profunda: 45–60 min","library",15]],
+  5:[["🤍","Tiempo contigo: actividad sola y segura durante 30 min","alone",10]]
+};
+
+let state = JSON.parse(localStorage.getItem("lastYearState") || '{"tasks":{},"custom":{},"xp":0,"rewards":[]}');
+let view = new Date(2026,8,28), selected = new Date(2026,8,28);
+
+function save(){localStorage.setItem("lastYearState",JSON.stringify(state)); updateStats(); renderCalendar();}
+function key(d){return d.toISOString().slice(0,10)}
+function cycleFor(d){
+  const diff=Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-START)/86400000);
+  return ((diff%6)+6)%6;
+}
+function isTuesday(d){return d.getDay()===2}
+function tasksFor(d){
+  const c=cycleFor(d), arr=baseTasks.map(x=>[...x]);
+  if(special[c]) special[c].forEach(x=>arr.push([...x]));
+  if(isTuesday(d)) arr.push(["🇺🇳","ONU: revisar agenda/apuntes y preparar lo necesario para la próxima sesión","onuPrep",10]);
+  if(d.getDate()===1) arr.push(["🗂️","Revisión mensual: elegir 3 metas y agendar citas importantes","monthly",8]);
+  return arr;
+}
+function renderCalendar(){
+  const cal=document.getElementById("calendar"); cal.innerHTML="";
+  const names=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
+  names.forEach(n=>{let e=document.createElement("div");e.className="dow";e.textContent=n;cal.appendChild(e)});
+  const y=view.getFullYear(), m=view.getMonth();
+  document.getElementById("monthTitle").textContent=view.toLocaleDateString("es-EC",{month:"long",year:"numeric"});
+  const first=(new Date(y,m,1).getDay()+6)%7, days=new Date(y,m+1,0).getDate();
+  for(let i=0;i<first;i++){let e=document.createElement("div");e.className="day muted";cal.appendChild(e)}
+  for(let n=1;n<=days;n++){
+    const d=new Date(y,m,n), k=key(d), done=(state.tasks[k]||[]).filter(Boolean).length, total=tasksFor(d).length;
+    let e=document.createElement("div"); e.className="day";
+    if(key(d)===key(new Date())) e.classList.add("today");
+    e.innerHTML=`<div class="daynum">${n}</div><span class="tag cycle">${dayNames[cycleFor(d)]}</span>${isTuesday(d)?'<span class="tag onu">ONU</span>':''}<div class="note">${done}/${total}</div>`;
+    e.onclick=()=>selectDay(d); cal.appendChild(e);
+  }
+}
+function selectDay(d){
+  selected=new Date(d); const k=key(d), tasks=tasksFor(d), done=state.tasks[k]||[];
+  document.getElementById("selectedTitle").textContent=d.toLocaleDateString("es-EC",{weekday:"long",day:"numeric",month:"long"});
+  document.getElementById("selectedMeta").textContent=`${dayNames[cycleFor(d)]} · ${cycleFocus[cycleFor(d)]}${isTuesday(d)?" · MARTES ONU":""}`;
+  const box=document.getElementById("taskList"); box.innerHTML="";
+  tasks.forEach((t,i)=>{
+    const row=document.createElement("label"); row.className="task";
+    row.innerHTML=`<input type="checkbox" ${done[i]?'checked':''}><span>${t[0]} <b>${t[1]}</b><br><span class="badge">+${t[3]} XP</span></span>`;
+    row.querySelector("input").onchange=(ev)=>{
+      state.tasks[k]=state.tasks[k]||[];
+      if(ev.target.checked){state.tasks[k][i]=true;state.xp=(state.xp||0)+t[3]}
+      else {state.tasks[k][i]=false;state.xp=Math.max(0,(state.xp||0)-t[3])}
+      save(); selectDay(d);
+    };
+    box.appendChild(row);
+  });
+  (state.custom[k]||[]).forEach((t,i)=>{
+    const row=document.createElement("label"); row.className="task";
+    row.innerHTML=`<input type="checkbox"><span>⭐ <b>${t}</b><br><span class="badge">+5 XP</span></span>`;
+    row.querySelector("input").onchange=e=>{if(e.target.checked){state.xp+=5;save()}};
+    box.appendChild(row);
+  });
+}
+function updateStats(){
+  document.getElementById("xp").textContent=state.xp||0;
+  const done=Object.values(state.tasks).flat().filter(Boolean).length;
+  document.getElementById("doneCount").textContent=done;
+  document.getElementById("level").textContent=Math.floor((state.xp||0)/100)+1;
+  document.getElementById("bar").style.width=((state.xp||0)%100)+"%";
+  document.getElementById("progressText").textContent=`Nivel ${Math.floor((state.xp||0)/100)+1} · ${100-((state.xp||0)%100)} XP para el siguiente nivel.`;
+}
+function changeMonth(n){view=new Date(view.getFullYear(),view.getMonth()+n,1);renderCalendar()}
+function addCustom(){
+  const inp=document.getElementById("customInput"); if(!inp.value.trim())return;
+  const k=key(selected); state.custom[k]=state.custom[k]||[]; state.custom[k].push(inp.value.trim()); inp.value=""; save(); selectDay(selected);
+}
+const rewardData=[
+ ["☕","Café/chocolate + lectura tranquila",50],
+ ["🎨","Tarde creativa: pintar sin tareas extra",100],
+ ["📚","Elegir el próximo libro",150],
+ ["🎬","Noche de película/serie",200],
+ ["🛍️","Pequeño detalle para ti dentro de un presupuesto",300],
+ ["🌿","Salida tranquila/plan especial con alguien de confianza",450]
+];
+function renderRewards(){
+  const box=document.getElementById("rewards"); box.innerHTML="";
+  rewardData.forEach((r,i)=>{
+    const unlocked=(state.xp||0)>=r[2];
+    const e=document.createElement("div");e.className="reward"+(unlocked?"":" locked");
+    e.innerHTML=`<span>${r[0]} <b>${r[1]}</b></span><span>${r[2]} XP</span>`;
+    box.appendChild(e);
+  });
+}
+document.getElementById("notifyBtn").onclick=async()=>{
+  if(!("Notification" in window)){alert("Este navegador no permite notificaciones.");return}
+  const p=await Notification.requestPermission();
+  if(p==="granted") new Notification("My Last Year ✦",{body:"Notificaciones activadas. Tu rutina te espera."});
+  else alert("Necesitas permitir las notificaciones en el navegador.");
+};
+document.getElementById("reading").textContent="Etapa 1: empezaremos con una lectura corta y guiada. Yo te iré dando exactamente qué leer.";
+document.getElementById("bigGoals").innerHTML=`
+<div class="task">🦷 <span><b>Dentista</b><br><span class="badge">Agendar según recomendación profesional; no hace falta que sea mensual.</span></span></div>
+<div class="task">🦶 <span><b>Podología</b><br><span class="badge">Meta personal: una revisión mensual si eso es lo que necesitas.</span></span></div>
+<div class="task">💅 <span><b>Uñas / depilación</b><br><span class="badge">Autocuidado según tu preferencia y calendario.</span></span></div>
+<div class="task">🌱 <span><b>Voluntariado #1 y #2</b><br><span class="badge">Investigar → revisar requisitos → hablarlo con un adulto responsable → aplicar.</span></span></div>
+`;
+renderCalendar(); selectDay(selected); updateStats(); renderRewards();
+</script>
+</body>
+</html>

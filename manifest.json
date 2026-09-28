@@ -1,0 +1,9 @@
+{
+  "name":"My Last Year — Ailin's Dashboard",
+  "short_name":"My Last Year",
+  "start_url":"./index.html",
+  "display":"standalone",
+  "background_color":"#f5f1ea",
+  "theme_color":"#1f2937",
+  "icons":[]
+}
